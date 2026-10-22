@@ -1,0 +1,1666 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>장비 대여 관리</title>
+<style>
+
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #e8ebf2;
+    --surface: #f2f4f8;
+    --surface2: #e0e4ee;
+    --border: #c8cedf;
+    --border2: #a8b0c8;
+    --text: #1a1f36;
+    --text2: #4a5270;
+    --text3: #7a84a0;
+    --accent: #3a6ff7;
+    --accent-dim: #d8e4fd;
+    --green: #157a45;
+    --green-dim: #d0f0e0;
+    --orange: #b85c00;
+    --orange-dim: #fde8c8;
+    --red: #c41a1a;
+    --red-dim: #fcd8d8;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans KR', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--surface2);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 32px 24px;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .header-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--accent-dim);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .header h1 {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+    line-height: 1.3;
+  }
+  .header p {
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.6;
+  }
+
+  /* Input Section */
+  .input-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .input-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 12px;
+  }
+  .input-label::before {
+    content: '';
+    display: inline-block;
+    width: 3px;
+    height: 13px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+  textarea {
+    width: 100%;
+    min-height: 280px;
+    padding: 14px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.7;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  textarea:focus { border-color: var(--accent); }
+  textarea::placeholder { color: var(--text3); }
+
+  /* Filter row */
+  .filter-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-width: 200px;
+  }
+  .filter-group label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+  }
+  .filter-group input[type="datetime-local"] {
+    padding: 9px 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+  .filter-group input[type="datetime-local"]:focus {
+    border-color: var(--accent);
+  }
+
+  /* Radio toggle */
+  .toggle-group {
+    display: flex;
+    gap: 0;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 3px;
+  }
+  .toggle-btn {
+    flex: 1;
+    padding: 7px 12px;
+    font-size: 12px;
+    font-family: var(--sans);
+    font-weight: 500;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text3);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .toggle-btn.active {
+    background: var(--surface2);
+    color: var(--text);
+  }
+
+  /* Analyze button */
+  .analyze-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 16px;
+    transition: opacity 0.15s, transform 0.1s;
+    letter-spacing: -0.2px;
+  }
+  .analyze-btn:hover { opacity: 0.9; }
+  .analyze-btn:active { transform: scale(0.99); }
+
+  /* Results */
+  #results { margin-top: 24px; }
+
+  .results-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: gap;
+  }
+  .results-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+  }
+  .results-meta {
+    font-size: 12px;
+    color: var(--text3);
+    font-family: var(--mono);
+  }
+
+  /* Summary stat chips */
+  .stat-chips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .stat-chip {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 30px;
+    font-size: 13px;
+  }
+  .stat-chip .val {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 14px;
+  }
+  .stat-chip .lbl { color: var(--text2); font-size: 12px; }
+
+  /* Time segment cards */
+  .segment-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    transition: border-color 0.15s;
+  }
+  .segment-card:hover { border-color: var(--border2); }
+
+  .segment-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .segment-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot-all { background: var(--green); }
+  .dot-some { background: var(--orange); }
+  .dot-busy { background: var(--red); }
+
+  .segment-time {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    flex: 1;
+  }
+  .segment-badges {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .badge {
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 500;
+    font-family: var(--mono);
+  }
+  .badge-avail { background: var(--green-dim); color: var(--green); }
+  .badge-over {
+    background: var(--red);
+    color: #fff;
+    font-weight: 600;
+    font-size: 11.5px;
+    max-width: 340px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .segment-over > .segment-header {
+    background: rgba(220,38,38,0.05);
+    border-bottom: 1px solid rgba(220,38,38,0.2);
+  }
+  .segment-over {
+    border-color: var(--red) !important;
+    animation: pulse-red 1.8s ease-in-out infinite;
+  }
+  .badge-limit { background: var(--orange-dim); color: var(--orange); }
+  .badge-none { background: var(--red-dim); color: var(--red); }
+  .badge-renter {
+    background: var(--accent-dim);
+    color: var(--accent);
+    font-family: var(--sans);
+    font-size: 11px;
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .segment-chevron {
+    color: var(--text3);
+    font-size: 12px;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+  .segment-card.open .segment-chevron { transform: rotate(180deg); }
+
+  .segment-body {
+    display: none;
+    padding: 0 18px 16px;
+    border-top: 1px solid var(--border);
+  }
+  .segment-card.open .segment-body { display: block; }
+
+  /* Equipment grid inside segment */
+  .equip-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .equip-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    gap: 8px;
+  }
+  .equip-row.unavail {
+    border-color: var(--orange);
+    background: var(--orange-dim);
+    animation: pulse-orange 1.8s ease-in-out infinite;
+  }
+  .equip-row.unavail .equip-name { color: var(--orange); font-weight: 600; }
+  .equip-row.over {
+    border-color: var(--red);
+    background: var(--red-dim);
+    animation: pulse-red 1.8s ease-in-out infinite;
+  }
+  .equip-row.over .equip-name { color: var(--red); font-weight: 600; }
+  @keyframes pulse-red {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(240,79,79,0); }
+    50%       { box-shadow: 0 0 0 3px rgba(220,38,38,0.2); }
+  }
+  @keyframes pulse-orange {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(184,92,0,0); }
+    50%       { box-shadow: 0 0 0 3px rgba(184,92,0,0.2); }
+  }
+  .over-badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: var(--red);
+    color: #fff;
+    flex-shrink: 0;
+    margin-right: 4px;
+  }
+  .unavail-badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: var(--orange);
+    color: #fff;
+    flex-shrink: 0;
+    margin-right: 4px;
+  }
+  .equip-row-clickable { cursor: pointer; }
+  .equip-row-clickable:hover { border-color: var(--border2); background: var(--surface2); }
+
+  /* Popup */
+  .renter-popup {
+    position: fixed;
+    z-index: 9999;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 14px 16px;
+    min-width: 200px;
+    max-width: 320px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.15s, transform 0.15s;
+  }
+  .renter-popup.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+  .renter-popup-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    color: var(--text3);
+    margin-bottom: 8px;
+  }
+  .renter-popup-name {
+    font-size: 13px;
+    color: var(--text);
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .renter-popup-name:last-child { border-bottom: none; }
+  .renter-popup-qty {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--orange);
+    flex-shrink: 0;
+  }
+  .renter-popup-equip {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .equip-name {
+    font-size: 12.5px;
+    color: var(--text);
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .equip-avail-count {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    flex-shrink: 0;
+    padding: 2px 8px;
+    border-radius: 5px;
+  }
+  .count-ok { background: var(--green-dim); }
+  .count-warn { background: var(--orange-dim); }
+  .count-zero { background: var(--red-dim); }
+
+  .legend {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+  .legend-title {
+    color: var(--text3);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-right: 4px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    color: var(--text2);
+    font-size: 12px;
+    gap: 5px;
+  }
+  .legend-item > span:last-child { color: var(--text3); font-size: 11px; margin-left: 2px; }
+  .frac-used-zero { color: var(--text3); font-weight: 400; }
+  .frac-used-over { color: #fff; font-weight: 700; }
+  .frac-used-ok   { color: var(--green); font-weight: 600; }
+  .frac-used-warn { color: var(--orange); font-weight: 600; }
+  .frac-used-full { color: var(--red); font-weight: 600; }
+  .frac-sep  { color: var(--text3); margin: 0 1px; font-weight: 400; }
+  .frac-total { color: var(--text2); font-weight: 400; }
+
+  .renters-list {
+    margin-top: 14px;
+    padding: 10px 14px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 12.5px;
+    color: var(--text2);
+    line-height: 1.8;
+  }
+  .renters-list strong { color: var(--text3); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px; }
+
+  /* Filter bar */
+  .filter-bar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .search-input {
+    flex: 1;
+    min-width: 200px;
+    padding: 9px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-input:focus { border-color: var(--accent); }
+  .search-input::placeholder { color: var(--text3); }
+
+  .show-only-avail {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    color: var(--text2);
+    cursor: pointer;
+    padding: 8px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    user-select: none;
+    transition: border-color 0.15s;
+  }
+  .show-only-avail:hover { border-color: var(--border2); }
+  .show-only-avail input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+
+  /* Expand all button */
+  .expand-all-btn {
+    padding: 8px 14px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text2);
+    font-family: var(--sans);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .expand-all-btn:hover { border-color: var(--border2); color: var(--text); }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--text3);
+    font-size: 14px;
+  }
+  .empty-state .icon { font-size: 32px; margin-bottom: 12px; }
+
+  .duplicate-warning {
+    background: var(--red-dim);
+    border: 1px solid var(--red);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    font-size: 13px;
+    color: var(--text);
+  }
+  .duplicate-warning-title {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-weight: 600;
+    color: var(--red);
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+  .duplicate-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .duplicate-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    background: rgba(196,26,26,0.06);
+    border: 1px solid rgba(196,26,26,0.2);
+    border-radius: 7px;
+    flex-wrap: wrap;
+  }
+  .duplicate-name {
+    font-weight: 600;
+    color: var(--text);
+    font-size: 13px;
+    min-width: 80px;
+  }
+  .duplicate-period {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text2);
+    flex: 1;
+  }
+  .duplicate-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: var(--red);
+    color: #fff;
+    flex-shrink: 0;
+    letter-spacing: 0.3px;
+  }
+
+  .unknown-warning {
+    background: var(--orange-dim);
+    border: 1px solid var(--orange);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    font-size: 13px;
+    color: var(--text);
+  }
+  .unknown-warning-title {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-weight: 600;
+    color: var(--orange);
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+  .unknown-warning-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+  }
+  .unknown-badge {
+    padding: 3px 9px;
+    background: var(--surface);
+    border: 1px solid var(--orange);
+    border-radius: 20px;
+    font-size: 12px;
+    font-family: var(--mono);
+    color: var(--orange);
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+  @media (max-width: 600px) {
+    body { padding: 20px 14px; }
+    .filter-row { flex-direction: column; }
+    .equip-grid { grid-template-columns: 1fr; }
+    .segment-time { font-size: 11.5px; }
+  }
+
+  
+
+  /* ── Tabs ── */
+  .tab-nav {
+    display: flex;
+    gap: 0;
+    margin-bottom: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 5px;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 12px 16px;
+    font-family: var(--sans);
+    font-size: 13.5px;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .tab-btn:hover { color: var(--text); background: var(--surface2); }
+  .tab-btn.active {
+    background: var(--accent);
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(58,111,247,0.2);
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── 신규 신청 검사 탭 ── */
+  .chk-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 14px;
+  }
+  @media (max-width: 700px) { .chk-grid { grid-template-columns: 1fr; } }
+  .chk-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .chk-box-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .chk-box-title::before {
+    content: '';
+    display: inline-block;
+    width: 3px; height: 12px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+  .chk-box textarea {
+    width: 100%;
+    min-height: 240px;
+    padding: 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.7;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .chk-box textarea:focus { border-color: var(--accent); }
+  .chk-date-row {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .chk-date-row label {
+    font-size: 13px; font-weight: 500; color: var(--text2);
+  }
+  .chk-date-row input[type=date] {
+    padding: 8px 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .chk-date-row input[type=date]:focus { border-color: var(--accent); }
+  .chk-verdict {
+    padding: 16px 18px;
+    border-radius: 10px;
+    border: 1px solid;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  .chk-verdict.ok   { background: var(--green-dim); border-color: var(--green); color: var(--green); }
+  .chk-verdict.ng   { background: var(--red-dim);   border-color: var(--red);   color: var(--red); }
+  .chk-verdict.warn { background: var(--orange-dim); border-color: var(--orange); color: var(--orange); }
+  .chk-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-top: 12px;
+  }
+  .chk-section h3 { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 12px; }
+  .chk-section-meta { font-size: 12px; color: var(--text2); margin-bottom: 10px; line-height: 1.6; }
+  .chk-table-wrap { width: 100%; overflow-x: auto; }
+  .chk-table-wrap table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .chk-table-wrap th, .chk-table-wrap td {
+    border-bottom: 1px solid var(--border);
+    padding: 9px 10px; text-align: left; vertical-align: top;
+  }
+  .chk-table-wrap th {
+    background: var(--surface2);
+    font-size: 11px; font-weight: 600;
+    color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+  .chk-danger { color: var(--red); font-weight: 600; }
+  .chk-warn   { color: var(--orange); font-weight: 500; }
+  .chk-safe   { color: var(--green); font-weight: 500; }
+  .chk-copy-btn {
+    padding: 9px 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: var(--sans); font-size: 13px; font-weight: 500;
+    color: var(--text); cursor: pointer; margin-bottom: 10px;
+    transition: all 0.15s; display: inline-block;
+  }
+  .chk-copy-btn:hover { border-color: var(--border2); }
+  .chk-adj-textarea {
+    width: 100%; min-height: 260px; padding: 12px;
+    font-size: 13px; line-height: 1.7;
+    font-family: var(--mono);
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); outline: none; resize: vertical;
+  }
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <div class="header-icon">📋</div>
+  <div>
+    <h1>장비 대여 관리</h1>
+    <p>시간대별 사용 현황 분석 및 신규 신청 가능 여부를 검사합니다.</p>
+  </div>
+</div>
+
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('usage')">📊 시간대별 사용 현황</button>
+  <button class="tab-btn" onclick="switchTab('check')">✅ 신규 신청 검사</button>
+</div>
+
+<!-- ── 탭 1: 시간대별 사용 현황 ── -->
+<div id="tab-usage" class="tab-panel active">
+
+<div class="input-section">
+  <div class="input-label">기존 대여 신청완료건</div>
+  <textarea id="existingText" placeholder="기존 승인 완료 신청건 여러 개를 붙여 넣으세요.
+
+예시)
+[장비대여 신청]
+이 름: 홍길동
+대여일시: 2025-06-10T09:00
+반납일시: 2025-06-10T18:00
+소니 A7M3 셋트 (1개)
+중형트라이포드 (1개)"></textarea>
+
+  <div class="filter-row">
+    <div class="filter-group">
+      <label>조회 시작 (선택사항)</label>
+      <input type="datetime-local" id="filterStart">
+    </div>
+    <div class="filter-group">
+      <label>조회 종료 (선택사항)</label>
+      <input type="datetime-local" id="filterEnd">
+    </div>
+    <div class="filter-group" style="justify-content: flex-end;">
+      <label>장비 표시 기준</label>
+      <div class="toggle-group">
+        <button class="toggle-btn active" id="toggleAll" onclick="setDisplayMode('all')">전체</button>
+        <button class="toggle-btn" id="toggleAvail" onclick="setDisplayMode('avail')">여유 있는 것만</button>
+        <button class="toggle-btn" id="toggleUsed" onclick="setDisplayMode('used')">사용 중만</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="analyze-btn" onclick="analyze()">시간대별 사용 현황 분석</button>
+</div>
+
+<div id="results"></div>
+
+</div><!-- /tab-usage -->
+
+<!-- ── 탭 2: 신규 신청 검사 ── -->
+<div id="tab-check" class="tab-panel">
+
+  <div class="input-section">
+
+    <div class="chk-date-row">
+      <label>📅 신청기간 기준 날짜</label>
+      <input type="date" id="ruleBaseDate">
+    </div>
+
+    <div class="chk-grid">
+      <div class="chk-box">
+        <div class="chk-box-title">기존 신청완료건</div>
+        <textarea id="chkExisting" placeholder="기존 승인 완료 신청건 여러 개를 붙여 넣으세요."></textarea>
+      </div>
+      <div class="chk-box">
+        <div class="chk-box-title">신규 신청건</div>
+        <textarea id="chkNew" placeholder="신규 신청 1건을 붙여 넣으세요."></textarea>
+      </div>
+    </div>
+
+    <button class="analyze-btn" onclick="checkNewApplication()">신규 신청 가능 여부 확인</button>
+
+  </div>
+
+  <div id="chkResult" style="margin-top:20px;"></div>
+
+</div><!-- /tab-check -->
+
+
+<!-- Renter popup -->
+<div class="renter-popup" id="renterPopup">
+  <div class="renter-popup-equip" id="popupEquipName"></div>
+  <div class="renter-popup-title">사용 중인 대여자</div>
+  <div id="popupRenterList"></div>
+</div>
+
+<script>
+const inventory = {
+  "소니 A7M3 셋트": 3,
+  "캐논 EOS 6D 셋트": 1,
+  "캐논 EOS 80D 셋트": 2,
+  "캐논 EOS 90D 셋트": 1,
+  "소니 FE 24-70mm F4 ZA OSS": 3,
+  "캐논 EF-S 17-55mm F2.8 IS USM": 2,
+  "캐논 EF-S 10-22mm F3.5-4.5 USM": 1,
+  "캐논 EF-S 18-135mm F3.5-5.6 IS USM": 2,
+  "캐논 EF-S 24mm F2.8 STM": 2,
+  "SIGMA A 30mm F1.4 DC HSM 캐논 EF-S용": 2,
+  "캐논 EF 50mm F1.8 STM": 2,
+  "캐논 EF 24-105mm F4 L IS USM": 1,
+  "캐논 EF 85mm F1.8 USM": 2,
+  "캐논 EF 70-300mm F4-5.6 L IS USM": 1,
+  "캐논 EF 70-200mm F2.8 L IS USM III": 1,
+  "SIGMA MC-11 EF-FE 마운트 컨버터": 2,
+  "RODE 로데 붐마이크 셋트": 2,
+  "TASCAM DR-70D 오디오 레코더": 2,
+  "로데 비디오 마이크 프로 플러스": 2,
+  "로데 비디오 마이크로": 1,
+  "RODE Wireless GO 무선 외장마이크": 4,
+  "Cinetree L-600A": 5,
+  "NANLITE MixPanel 150": 3,
+  "GODOX SL-60W LED조명": 3,
+  "양면반사판": 4,
+  "고보 (직사각)": 2,
+  "A스탠드": 6,
+  "C스탠드": 2,
+  "중형트라이포드": 4,
+  "소형트라이포드": 3,
+  "DJI 드론": 1,
+  "슬라이더": 2,
+  "가변 ND필터": 2,
+  "V마운트배터리": 5,
+  "캐논 추가배터리": 3,
+  "소니 추가배터리": 3,
+  "캐리어": 2,
+  "SD카드리더기": 3,
+  "스튜디오 대관 희망": 1
+};
+
+let displayMode = 'all';
+let allSegments = [];
+let expandedAll = false;
+
+function setDisplayMode(mode) {
+  displayMode = mode;
+  document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+  if (mode === 'all') document.getElementById('toggleAll').classList.add('active');
+  if (mode === 'avail') document.getElementById('toggleAvail').classList.add('active');
+  if (mode === 'used') document.getElementById('toggleUsed').classList.add('active');
+}
+
+function normalizeName(name) {
+  return name.replace(/\s+/g, " ").trim();
+}
+
+function detectDuplicates(apps) {
+  // 이름 + 대여일시 + 반납일시가 동일한 항목을 중복으로 판단
+  const seen = {};
+  const duplicates = [];
+  apps.forEach((a, i) => {
+    const key = `${a.borrowerName.replace(/\s+/g,'').toLowerCase()}__${a.start.getTime()}__${a.end.getTime()}`;
+    if (!seen[key]) {
+      seen[key] = [i];
+    } else {
+      seen[key].push(i);
+    }
+  });
+  Object.values(seen).forEach(indices => {
+    if (indices.length > 1) {
+      const a = apps[indices[0]];
+      duplicates.push({
+        name: a.borrowerName,
+        start: a.start,
+        end: a.end,
+        count: indices.length,
+        indices
+      });
+    }
+  });
+  return duplicates;
+}
+
+function parseApplications(text) {
+  const blocks = text.split(/(?=\[장비대여 신청\])/g)
+    .filter(b => b.includes("대여일시:"));
+
+  return blocks.map((block, i) => {
+    const nameMatch = block.match(/이\s*름:\s*(.+)/);
+    const startMatch = block.match(/대여일시:\s*([0-9T:\-]+)/);
+    const endMatch = block.match(/반납일시:\s*([0-9T:\-]+)/);
+
+    const borrowerName = nameMatch ? nameMatch[1].trim() : `신청자 ${i + 1}`;
+    const items = {};
+    const itemRegex = /^(.+?)\s*\((\d+)개\)/gm;
+    let m;
+    while ((m = itemRegex.exec(block)) !== null) {
+      const n = normalizeName(m[1]);
+      items[n] = (items[n] || 0) + Number(m[2]);
+    }
+    return {
+      borrowerName,
+      start: startMatch ? new Date(startMatch[1]) : null,
+      end: endMatch ? new Date(endMatch[1]) : null,
+      items
+    };
+  }).filter(a => a.start && a.end && a.start < a.end);
+}
+
+function formatDT(d) {
+  const pad = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function analyze() {
+  const text = document.getElementById('existingText').value.trim();
+  const resultsEl = document.getElementById('results');
+
+  if (!text) {
+    resultsEl.innerHTML = `<div class="empty-state"><div class="icon">📭</div>기존 대여 신청건을 입력해 주세요.</div>`;
+    return;
+  }
+
+  const apps = parseApplications(text);
+
+  if (apps.length === 0) {
+    resultsEl.innerHTML = `<div class="empty-state"><div class="icon">⚠️</div>파싱 가능한 신청건이 없습니다.<br>양식(이름/대여일시/반납일시)을 확인해 주세요.</div>`;
+    return;
+  }
+
+  const fsVal = document.getElementById('filterStart').value;
+  const feVal = document.getElementById('filterEnd').value;
+  const filterStart = fsVal ? new Date(fsVal) : null;
+  const filterEnd = feVal ? new Date(feVal) : null;
+
+  // Collect all time breakpoints
+  let times = new Set();
+  apps.forEach(a => {
+    times.add(a.start.getTime());
+    times.add(a.end.getTime());
+  });
+  if (filterStart) times.add(filterStart.getTime());
+  if (filterEnd) times.add(filterEnd.getTime());
+
+  const sorted = [...times].sort((a, b) => a - b).map(t => new Date(t));
+
+  const segments = [];
+  for (let i = 0; i < sorted.length - 1; i++) {
+    const segStart = sorted[i];
+    const segEnd = sorted[i + 1];
+    if (segStart >= segEnd) continue;
+
+    // Filter by user-specified range
+    if (filterStart && segEnd <= filterStart) continue;
+    if (filterEnd && segStart >= filterEnd) continue;
+
+    const active = apps.filter(a => a.start < segEnd && a.end > segStart);
+
+    // Calculate usage
+    const usedItems = {};
+    active.forEach(a => {
+      Object.entries(a.items).forEach(([name, qty]) => {
+        usedItems[name] = (usedItems[name] || 0) + qty;
+      });
+    });
+
+    // Build equipment rows
+    const equip = Object.entries(inventory).map(([name, stock]) => {
+      const used = usedItems[name] || 0;
+      const avail = stock - used;
+      return { name, stock, used, avail };
+    });
+
+    const availCount = equip.filter(e => e.avail > 0).length;
+    const totalCount = equip.length;
+    const fullyBooked = equip.filter(e => e.avail <= 0 && e.used > 0).length;
+    const overItems = equip.filter(e => e.avail < 0);
+
+    segments.push({ segStart, segEnd, active, equip, availCount, totalCount, fullyBooked, overItems });
+  }
+
+  allSegments = segments;
+
+  if (segments.length === 0) {
+    resultsEl.innerHTML = `<div class="empty-state"><div class="icon">🔍</div>선택한 범위에 해당하는 시간대가 없습니다.</div>`;
+    return;
+  }
+
+  // 미등록 장비 수집
+  const unknownSet = new Set();
+  apps.forEach(a => {
+    Object.keys(a.items).forEach(name => {
+      if (inventory[name] === undefined) unknownSet.add(name);
+    });
+  });
+
+  const duplicates = detectDuplicates(apps);
+  renderResults(segments, [...unknownSet], duplicates);
+}
+
+function renderResults(segments, unknownItems = [], duplicates = []) {
+  const resultsEl = document.getElementById('results');
+
+  const totalRenters = new Set();
+  segments.forEach(s => s.active.forEach(a => totalRenters.add(a.borrowerName)));
+
+  const duplicateWarning = duplicates.length > 0 ? `
+    <div class="duplicate-warning">
+      <div class="duplicate-warning-title">⚠ 중복 신청 ${duplicates.length}건 감지</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">이름과 대여·반납 시간이 완전히 동일한 신청건이 여러 번 입력되었습니다. 수량이 중복 합산되어 현황이 부정확할 수 있습니다.</div>
+      <div class="duplicate-list">
+        ${duplicates.map(d => `
+          <div class="duplicate-item">
+            <span class="duplicate-name">${d.name}</span>
+            <span class="duplicate-period">${formatDT(d.start)} ~ ${formatDT(d.end)}</span>
+            <span class="duplicate-badge">${d.count}회 입력</span>
+          </div>`).join('')}
+      </div>
+    </div>` : '';
+
+  const unknownWarning = unknownItems.length > 0 ? `
+    <div class="unknown-warning">
+      <div class="unknown-warning-title">⚠ 데이터베이스에 없는 장비 ${unknownItems.length}개</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:6px;">아래 장비명은 보유 목록에 등록되어 있지 않아 수량 검사에서 제외됩니다. 장비명 오타 여부를 확인해 주세요.</div>
+      <div class="unknown-warning-list">
+        ${unknownItems.map(n => `<span class="unknown-badge">${n}</span>`).join('')}
+      </div>
+    </div>` : '';
+
+  let html = `${duplicateWarning}${unknownWarning}
+    <div class="results-header">
+      <span class="results-title">분석 결과 — ${segments.length}개 시간 구간</span>
+      <span class="results-meta">${formatDT(segments[0].segStart)} ~ ${formatDT(segments[segments.length-1].segEnd)}</span>
+    </div>
+
+    <div class="stat-chips">
+      <div class="stat-chip">
+        <span class="val" style="color:var(--accent)">${segments.length}</span>
+        <span class="lbl">시간 구간</span>
+      </div>
+      <div class="stat-chip">
+        <span class="val" style="color:var(--green)">${Object.keys(inventory).length}</span>
+        <span class="lbl">총 장비 품목</span>
+      </div>
+      <div class="stat-chip">
+        <span class="val" style="color:var(--orange)">${totalRenters.size}</span>
+        <span class="lbl">총 대여자</span>
+      </div>
+    </div>
+
+
+    <div class="legend">
+      <span class="legend-title">사용 / 보유</span>
+      <span class="legend-item"><span class="frac-used-zero">0</span><span class="frac-sep">/</span><span class="frac-total">N</span><span>미사용</span></span>
+      <span class="legend-item"><span class="frac-used-ok">1</span><span class="frac-sep">/</span><span class="frac-total">N</span><span>여유 있음</span></span>
+      <span class="legend-item"><span class="frac-used-warn">N-1</span><span class="frac-sep">/</span><span class="frac-total">N</span><span>1개 남음</span></span>
+      <span class="legend-item"><span class="frac-used-full">N</span><span class="frac-sep">/</span><span class="frac-total">N</span><span>품절</span></span>
+      <span class="legend-item"><span class="unavail-badge">품절</span><span>품절 강조</span></span>
+      <span class="legend-item"><span class="over-badge">+N초과</span><span>수량 초과</span></span>
+    </div>
+    <div class="filter-bar">
+      <input class="search-input" type="text" placeholder="장비명 검색…" id="equipSearch" oninput="filterEquip()">
+      <button class="expand-all-btn" onclick="toggleExpandAll()">전체 펼치기 / 접기</button>
+    </div>
+  `;
+
+  segments.forEach((seg, idx) => {
+    const hasOver = seg.overItems.length > 0;
+    const dotCls = hasOver ? 'dot-busy' : seg.fullyBooked > 3 ? 'dot-busy' : seg.fullyBooked > 0 ? 'dot-some' : 'dot-all';
+    const overLabel = hasOver
+      ? `<span class="badge badge-over">⚠ ${seg.overItems.length}개 품목 초과 — ${seg.overItems.map(e => e.name + ' ' + Math.abs(e.avail) + '개').join(', ')}</span>`
+      : '';
+    const statusLabel = seg.fullyBooked === 0 && !hasOver
+      ? `<span class="badge badge-avail">전 품목 여유</span>`
+      : !hasOver
+        ? `<span class="badge badge-none">${seg.fullyBooked}개 품목 품절</span>`
+        : '';
+
+    const renterBadge = seg.active.length === 0
+      ? `<span class="badge badge-limit" style="font-family:var(--sans); font-size:11px;">대여 없음</span>`
+      : seg.active.slice(0, 2).map(a =>
+          `<span class="badge badge-renter" title="${a.borrowerName}">${a.borrowerName}</span>`
+        ).join('') + (seg.active.length > 2 ? `<span class="badge badge-renter">+${seg.active.length - 2}명</span>` : '');
+
+    // Equipment rows
+    const equipRows = seg.equip.map(e => {
+      const cls = e.avail > 1 ? 'count-ok' : e.avail === 1 ? 'count-warn' : 'count-zero';
+      const unavailCls = e.avail < 0 ? 'over' : e.avail === 0 ? 'unavail' : '';
+      const usedCls = e.avail < 0 ? 'frac-used-over' : e.used === 0 ? 'frac-used-zero' : e.avail === 0 ? 'frac-used-full' : e.avail === 1 ? 'frac-used-warn' : 'frac-used-ok';
+      const overBadge = e.avail < 0 ? `<span class="over-badge">+${Math.abs(e.avail)}초과</span>` : e.avail === 0 && e.used > 0 ? `<span class="unavail-badge">품절</span>` : '';
+      const label = `${overBadge}<span class="${usedCls}">${e.used}</span><span class="frac-sep">/</span><span class="frac-total">${e.stock}</span>`;
+      const renters = seg.active
+        .filter(a => a.items[e.name] > 0)
+        .map(a => a.borrowerName + '|' + a.items[e.name])
+        .join('__');
+      const clickable = e.used > 0 ? 'equip-row-clickable' : '';
+      return { html: `
+        <div class="equip-row ${unavailCls} ${clickable}" data-avail="${e.avail}" data-used="${e.used}" data-name="${e.name}" data-renters="${renters}" onclick="showRenters(this)">
+          <span class="equip-name" title="${e.name}">${e.name}</span>
+          <span class="equip-avail-count ${cls}">${label}</span>
+        </div>`, avail: e.avail, used: e.used, name: e.name };
+    });
+
+    const rentersList = seg.active.length > 0
+      ? `<div class="renters-list">
+          <strong>해당 구간 대여자</strong>
+          ${seg.active.map(a => `${a.borrowerName}`).join(' · ')}
+        </div>` : '';
+
+    html += `
+      <div class="segment-card ${hasOver ? 'segment-over' : ''}" id="seg-${idx}">
+        <div class="segment-header" onclick="toggleSeg(${idx})">
+          <div class="segment-status-dot ${dotCls}"></div>
+          <div class="segment-time">${formatDT(seg.segStart)} &nbsp;→&nbsp; ${formatDT(seg.segEnd)}</div>
+          <div class="segment-badges">
+            ${overLabel}
+            ${statusLabel}
+            ${renterBadge}
+          </div>
+          <div class="segment-chevron">▼</div>
+        </div>
+        <div class="segment-body" id="body-${idx}">
+          ${rentersList}
+          <div class="equip-grid" id="grid-${idx}">
+            ${equipRows.map(e => e.html).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  resultsEl.innerHTML = html;
+  applyDisplayMode();
+}
+
+function toggleSeg(idx) {
+  const card = document.getElementById(`seg-${idx}`);
+  card.classList.toggle('open');
+}
+
+function toggleExpandAll() {
+  expandedAll = !expandedAll;
+  document.querySelectorAll('.segment-card').forEach(c => {
+    if (expandedAll) c.classList.add('open');
+    else c.classList.remove('open');
+  });
+}
+
+function filterEquip() {
+  const q = document.getElementById('equipSearch')?.value.toLowerCase() || '';
+  document.querySelectorAll('.equip-row').forEach(row => {
+    const name = row.getAttribute('data-name') || '';
+    row.style.display = name.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+function applyDisplayMode() {
+  document.querySelectorAll('.equip-row').forEach(row => {
+    const avail = parseInt(row.getAttribute('data-avail'));
+    const used = parseInt(row.getAttribute('data-used'));
+    if (displayMode === 'avail') {
+      row.style.display = avail > 0 ? '' : 'none';
+    } else if (displayMode === 'used') {
+      row.style.display = used > 0 ? '' : 'none';
+    } else {
+      row.style.display = '';
+    }
+  });
+}
+
+// Re-apply display mode on toggle click
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.toggle-btn').forEach(btn => {
+    btn.addEventListener('click', () => setTimeout(applyDisplayMode, 10));
+  });
+});
+
+
+// ── 탭 전환 ──
+function switchTab(tab) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.querySelectorAll('.tab-btn')[tab === 'usage' ? 0 : 1].classList.add('active');
+}
+
+// ── 신규 신청 검사 함수 ──
+function chkNorm(name) { return name.replace(/\s+/g, ' ').trim(); }
+
+function chkParse(text, type) {
+  const blocks = text.split(/(?=\[장비대여 신청\])/g).filter(b => b.includes('대여일시:'));
+  return blocks.map((block, i) => {
+    const nm = block.match(/이\s*름:\s*(.+)/);
+    const s  = block.match(/대여일시:\s*([0-9T:\-]+)/);
+    const e  = block.match(/반납일시:\s*([0-9T:\-]+)/);
+    const name = nm ? nm[1].trim() : (type==='new' ? '신규 신청자' : `미확인 ${i+1}`);
+    const items = {};
+    const re = /^(.+?)\s*\((\d+)개\)/gm; let m;
+    while ((m = re.exec(block)) !== null) {
+      const n = chkNorm(m[1]); items[n] = (items[n]||0) + Number(m[2]);
+    }
+    return {
+      name, label: type==='new' ? `신규: ${name}` : name,
+      type, start: s ? new Date(s[1]) : null, end: e ? new Date(e[1]) : null,
+      items, originalText: block.trim()
+    };
+  }).filter(a => a.start && a.end);
+}
+
+function chkFmt(d) {
+  return d.toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+}
+
+function chkFmtDate(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function chkEscape(t) {
+  return t.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+}
+
+function chkTable(html) {
+  return `<div class="chk-table-wrap">${html}</div>`;
+}
+
+function chkInitDate() {
+  const el = document.getElementById('ruleBaseDate');
+  if (!el || el.value) return;
+  const d = new Date();
+  el.value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function chkPeriodRule(newApp) {
+  chkInitDate();
+  const toDay = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const baseEl = document.getElementById('ruleBaseDate');
+  const base = baseEl && baseEl.value ? toDay(new Date(baseEl.value)) : toDay(new Date());
+  const rental = toDay(newApp.start), ret = toDay(newApp.end);
+  const DAY = 86400000;
+  const dRental = Math.ceil((rental - base) / DAY);
+  const dReturn = Math.ceil((ret - base) / DAY);
+  const dur = Math.ceil((ret - rental) / DAY) + 1;
+  let msg = '', ok = false;
+  if (rental > ret)              msg = '❗ 대여일은 반납일보다 앞서야 합니다.';
+  else if (dReturn<0||dRental<0) msg = '⛔ 이미 지난 날짜입니다. 신청 불가';
+  else if (dRental < 3)          msg = '⚠️ 대여일 기준 3일 전까지 신청해야 합니다.';
+  else if (dReturn > 10)         msg = '⚠️ 반납일 기준 10일 이내만 신청 가능합니다.';
+  else if (dur > 3)              msg = '⚠️ 대여 기간은 최대 3일까지 가능합니다.';
+  else { msg = '✅ 신청 가능 기간 규정 준수'; ok = true; }
+  return `<div class="chk-section">
+    <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:10px;">신청기간 준수 여부</div>
+    <div class="chk-verdict ${ok ? 'ok' : 'warn'}">${msg}</div>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
+    ${chkTable(`<table>
+      <thead><tr><th>항목</th><th>값</th></tr></thead>
+      <tbody>
+        <tr><td>기준 날짜</td><td>${chkFmtDate(base)}</td></tr>
+        <tr><td>대여일</td><td>${chkFmtDate(rental)}</td></tr>
+        <tr><td>반납일</td><td>${chkFmtDate(ret)}</td></tr>
+      </tbody>
+    </table>`)}
+    </div>
+  </div>`;
+}
+
+function chkCreateAdjusted(origText, conflictSummary) {
+  return origText.split('\n').map(line => {
+    const m = line.match(/^(\s*)(.+?)\s*\((\d+)개\)(.*)$/);
+    if (!m) return line;
+    const norm = chkNorm(m[2]);
+    const entry = Object.entries(conflictSummary).find(([k]) => chkNorm(k) === norm);
+    if (!entry) return line;
+    const adj = Math.max(0, Number(m[3]) - entry[1].maxShortage);
+    return `${m[1]}${m[2].trim()} (${adj}개)  ← 수정사항`;
+  }).join('\n').trim();
+}
+
+function copyAdjustedText() {
+  const ta = document.getElementById('adjustedText');
+  if (!ta) { alert('복사할 수정 신청서가 없습니다.'); return; }
+  const text = ta.value;
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(() => alert('복사되었습니다.')).catch(() => fbCopy(text));
+  } else { fbCopy(text); }
+}
+
+function fbCopy(text) {
+  const t = document.createElement('textarea'); t.value = text;
+  document.body.appendChild(t); t.select(); document.execCommand('copy');
+  document.body.removeChild(t); alert('복사되었습니다.');
+}
+
+function checkNewApplication() {
+  const existingText = document.getElementById('chkExisting').value;
+  const newText      = document.getElementById('chkNew').value;
+  const result       = document.getElementById('chkResult');
+
+  const existing = chkParse(existingText, 'existing');
+  const newApps  = chkParse(newText, 'new');
+
+  if (newApps.length !== 1) {
+    result.innerHTML = '<div class="chk-verdict ng">신규 신청건은 반드시 1건만 입력해 주세요.</div>';
+    return;
+  }
+
+  const newApp  = newApps[0];
+  const allApps = [...existing, newApp];
+
+  const pts = new Set();
+  allApps.forEach(a => {
+    if (a.end > newApp.start && a.start < newApp.end) {
+      pts.add(a.start.getTime()); pts.add(a.end.getTime());
+    }
+  });
+  pts.add(newApp.start.getTime()); pts.add(newApp.end.getTime());
+
+  const sorted = [...pts].sort((a,b)=>a-b).map(t=>new Date(t))
+    .filter(t => t >= newApp.start && t <= newApp.end);
+
+  const segments = [];
+  const conflictSummary = {};
+
+  for (let i = 0; i < sorted.length - 1; i++) {
+    const ss = sorted[i], se = sorted[i+1];
+    if (ss >= se) continue;
+    const active = allApps.filter(a => a.start < se && a.end > ss);
+    if (!active.some(a => a.type === 'new')) continue;
+    const used = {};
+    active.forEach(a => Object.entries(a.items).forEach(([n,q]) => { used[n]=(used[n]||0)+q; }));
+    const rows = Object.entries(used).map(([name, u]) => {
+      const stock = inventory[name];
+      const newQty = newApp.items[name] || 0;
+      if (stock === undefined) return {name, newQty, u, stock:'미등록', status:'unknown', shortage:'-'};
+      if (u > stock) {
+        const sh = u - stock;
+        if (!conflictSummary[name]) conflictSummary[name] = {stock, newQty, maxUsed:u, maxShortage:sh, periods:[]};
+        else {
+          conflictSummary[name].maxUsed = Math.max(conflictSummary[name].maxUsed, u);
+          conflictSummary[name].maxShortage = Math.max(conflictSummary[name].maxShortage, sh);
+        }
+        conflictSummary[name].periods.push(`${chkFmt(ss)} ~ ${chkFmt(se)}`);
+        return {name, newQty, u, stock, status:'danger', shortage:sh};
+      }
+      if (u === stock) return {name, newQty, u, stock, status:'warn', shortage:0};
+      return {name, newQty, u, stock, status:'safe', shortage:0};
+    }).sort((a,b) => ({danger:0,warn:1,unknown:2,safe:3}[a.status] - {danger:0,warn:1,unknown:2,safe:3}[b.status]));
+    segments.push({start:ss, end:se, activeApps:active, rows});
+  }
+
+  const conflicts = Object.entries(conflictSummary);
+  const approved  = conflicts.length === 0;
+  let html = '';
+
+  // 미등록 장비 수집 (신규 + 기존 전체)
+  const unknownItems2 = new Set();
+  allApps.forEach(a => {
+    Object.keys(a.items).forEach(name => {
+      if (inventory[name] === undefined) unknownItems2.add(name);
+    });
+  });
+  if (unknownItems2.size > 0) {
+    html += `<div class="unknown-warning">
+      <div class="unknown-warning-title">⚠ 데이터베이스에 없는 장비 ${unknownItems2.size}개</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:6px;">아래 장비명은 보유 목록에 등록되어 있지 않아 수량 검사에서 제외됩니다. 장비명 오타 여부를 확인해 주세요.</div>
+      <div class="unknown-warning-list">
+        ${[...unknownItems2].map(n => `<span class="unknown-badge">${n}</span>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  html += chkPeriodRule(newApp);
+
+  html += `<div class="chk-section">
+    <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:10px;">장비 판정</div>
+    <div class="chk-verdict ${approved ? 'ok' : 'ng'}">
+      ${approved ? '✅ 신규 신청 승인 가능' : '❌ 신규 신청 승인 불가'}
+    </div>
+  </div>`;
+
+  if (!approved) {
+    html += `<div class="chk-section">
+      <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:10px;">초과 장비 요약</div>
+      ${chkTable(`<table>
+        <thead><tr><th>장비명</th><th>신규 수량</th><th>신규+기존</th><th>보유</th><th>부족</th><th>초과 발생 시간</th></tr></thead>
+        <tbody>${conflicts.map(([name,d]) => `
+          <tr>
+            <td>${name}</td><td>${d.newQty}</td><td>${d.maxUsed}</td><td>${d.stock}</td>
+            <td class="chk-danger">${d.maxShortage}개</td>
+            <td style="font-size:12px;line-height:2">${d.periods.join('<br>')}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`)}
+    </div>`;
+
+    const adjText = chkCreateAdjusted(newText, conflictSummary);
+    html += `<div class="chk-section">
+      <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:10px;">부족 수량 제외 수정 신청서</div>
+      <button class="chk-copy-btn" onclick="copyAdjustedText()">📋 수정 신청서 복사</button><br>
+      <textarea id="adjustedText" class="chk-adj-textarea" readonly>${chkEscape(adjText)}</textarea>
+    </div>`;
+  }
+
+  html += `<div class="chk-section" style="display:flex;align-items:center;gap:8px;">
+    <span style="font-size:12px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.6px;">신규 신청 기간</span>
+    <span style="font-family:var(--mono);font-size:13px;font-weight:500;color:var(--text);">${chkFmt(newApp.start)} ~ ${chkFmt(newApp.end)}</span>
+  </div>`;
+
+  if (segments.length === 0) {
+    html += `<div class="chk-section"><span class="chk-safe" style="font-size:13px;">✓ 겹치는 기존 신청이 없습니다.</span></div>`;
+  }
+
+  html += `<div style="font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.6px;margin-top:20px;margin-bottom:8px;">시간대별 상세 검사</div>`;
+
+  segments.forEach(seg => {
+    const bad = seg.rows.some(r => r.status === 'danger');
+    html += `<div class="chk-section">
+      <h3 class="${bad ? 'chk-danger' : 'chk-safe'}">
+        ${chkFmt(seg.start)} ~ ${chkFmt(seg.end)} &nbsp;—&nbsp; ${bad ? '⚠ 초과 발생' : '✓ 정상'}
+      </h3>
+      <p class="chk-section-meta">활성 신청: ${seg.activeApps.map(a=>a.label).join(', ')}</p>
+      ${chkTable(`<table>
+        <thead><tr><th>장비명</th><th>신규 수량</th><th>신규+기존</th><th>보유</th><th>판정</th></tr></thead>
+        <tbody>${seg.rows.map(row => {
+          const st = row.status==='danger' ? `<span class="chk-danger">초과 ${row.shortage}개</span>`
+                   : row.status==='warn'   ? `<span class="chk-warn">최대치</span>`
+                   : row.status==='unknown'? `<span class="chk-warn">미등록</span>`
+                   : `<span class="chk-safe">정상</span>`;
+          return `<tr><td>${row.name}</td><td>${row.newQty}</td><td>${row.u}</td><td>${row.stock}</td><td>${st}</td></tr>`;
+        }).join('')}</tbody>
+      </table>`)}
+    </div>`;
+  });
+
+  result.innerHTML = html;
+}
+
+document.addEventListener('DOMContentLoaded', chkInitDate);
+
+</script>
+
+<script>
+let popupTimeout;
+
+function showRenters(el) {
+  const name = el.getAttribute('data-name');
+  const renters = el.getAttribute('data-renters');
+  if (!renters) return;
+
+  const popup = document.getElementById('renterPopup');
+  document.getElementById('popupEquipName').textContent = name;
+
+  const list = document.getElementById('popupRenterList');
+  list.innerHTML = renters.split('__').map(r => {
+    const parts = r.split('|');
+    return `<div class="renter-popup-name"><span>${parts[0]}</span><span class="renter-popup-qty">${parts[1] || '?'}개 사용</span></div>`;
+  }).join('');
+
+  // position:fixed 이므로 scrollX/Y 불필요 — rect 값 그대로 사용
+  popup.style.visibility = 'hidden';
+  popup.style.left = '0px';
+  popup.style.top = '0px';
+  popup.classList.add('visible');
+
+  const rect = el.getBoundingClientRect();
+  const pw = popup.offsetWidth;
+  const ph = popup.offsetHeight;
+  const M = 8;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+
+  // 기본: 요소 오른쪽
+  let left = rect.right + M;
+  let top = rect.top;
+
+  // 오른쪽 벗어나면 → 왼쪽
+  if (left + pw > vw - M) left = rect.left - pw - M;
+  // 그래도 벗어나면 → 화면 왼쪽 끝에 붙임
+  if (left < M) left = M;
+
+  // 아래로 벗어나면 → 위로 올림
+  if (top + ph > vh - M) top = vh - ph - M;
+  // 위로 벗어나면 → 고정
+  if (top < M) top = M;
+
+  popup.style.left = left + 'px';
+  popup.style.top = top + 'px';
+  popup.style.visibility = '';
+}
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.equip-row-clickable')) {
+    document.getElementById('renterPopup').classList.remove('visible');
+  }
+});
+</script>
+
+</body>
+</html>
